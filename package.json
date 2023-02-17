@@ -1,0 +1,22 @@
+{
+  "name": "nodework",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://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@github.com/ChuKuoHua/NodeLiveWork.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ChuKuoHua/NodeLiveWork/issues"
+  },
+  "homepage": "https://github.com/ChuKuoHua/NodeLiveWork#readme",
+  "dependencies": {
+    "uuid": "^9.0.0"
+  }
+}
