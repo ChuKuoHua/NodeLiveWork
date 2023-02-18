@@ -1,5 +1,7 @@
 const http = require('http')
 const {v4: uuidv4 } = require('uuid')
+const err = require('./errHandle')
+const successHandle = require('./successHandle')
 // NOTE - 跨網域設定
 const headers = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, Content-Length, X-Requested-With',
@@ -7,6 +9,7 @@ const headers = {
   'Access-Control-Allow-Methods': 'PATCH, POST, GET,OPTIONS,DELETE',
   'Content-Type': 'application/json'
 }
+
 const todos = []
 // SECTION - createServer 開啟伺服器
 const requestListener = (req, res) => {
@@ -17,67 +20,51 @@ const requestListener = (req, res) => {
 
   if (req.url === "/todos" && req.method === 'GET') {
     // TODO - 讀取代辦
-    res.writeHead(200, headers);
-    res.write(
-      JSON.stringify({
-        "status": "success",
-        "data": todos
-      })
-    )
-    res.end();
+    successHandle(res, todos)
   } else if (req.url === "/todos" && req.method === 'POST') {
     // NOTE - 新增代辦
     req.on('end', () => {
-      const title = JSON.parse(body).title
-      const todo = {
-        id: uuidv4(),
-        title: title
+      try {
+        const title = JSON.parse(body).title
+        const todo = {
+          id: uuidv4(),
+          title: title
+        }
+        todos.push(todo)
+        if(title) {
+          successHandle(res, todos)
+        } else {
+          err.errHandle(res)
+        }
+      } catch (error) {
+        err.errHandle(res)
       }
-      todos.push(todo)
-
-      res.writeHead(200, headers);
-      res.write(
-        JSON.stringify({
-          "status": "success",
-          "data": todos
-        })
-      )
-      res.end();
     })
   } else if (req.url === "/todos" && req.method === 'PATCH') {
     // TODO - 更新代辦
-    res.writeHead(200, headers);
-    res.write(
-      JSON.stringify({
-        "status": "success",
-        "data": "更新成功"
-      })
-    )
-    res.end();
+    successHandle(res, "更新成功")
   } else if (req.url === "/todos" && req.method === 'DELETE') {
-    // TODO - 刪除代辦
-    res.writeHead(200, headers);
-    res.write(
-      JSON.stringify({
-        "status": "success",
-        "data": "刪除成功"
-      })
-    )
-    res.end();
+    // TODO - 刪除全部代辦
+    todos.length = 0 // 清空全部 todo
+    successHandle(res, todos)
+  } else if (req.url.startsWith("/todos/") && req.method === 'DELETE') {
+    // TODO - 刪除單筆代辦
+    const id = req.url.split('/').pop() // 取得 todo id
+    const index = todos.findIndex(element => element.id === id) // 找出 id 位置
+
+    if(index !== -1) {
+      todos.splice(index, 1) // 移除此 id 資料
+      successHandle(res, todos)
+    } else {
+      err.errHandle(res)
+    }
   } else if (req.method === 'OPTIONS') {
     // NOTE - OPTIONS 檢查機制
     res.writeHead(200, headers);
     res.end();
   } else {
     // NOTE - 404 錯誤顯示
-    res.writeHead(404, headers);
-    res.write(
-      JSON.stringify({
-        "status": "error",
-        "data": "查無此網址"
-      })
-    )
-    res.end();
+    err.notHandle(res)
   }
 }
 const server = http.createServer(requestListener);
